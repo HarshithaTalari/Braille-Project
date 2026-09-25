@@ -1,23 +1,23 @@
 {
+  "id": "/Braille-Project/",
   "name": "AI-Powered Braille Content Generator",
   "short_name": "Braille Generator",
   "description": "Offline Braille content generator for visually impaired students",
-  "start_url": "./",
-  "scope": "./",
-  "id": "./",
+  "start_url": "/Braille-Project/",
+  "scope": "/Braille-Project/",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#020617",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "/Braille-Project/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
+      "src": "/Braille-Project/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
