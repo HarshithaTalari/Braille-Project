@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<title>AI-Powered Braille Content Generator for Visually Impaired Students</title>
+
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#020617" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<style>
+
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #020617;
+}
+
+.app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 55px 20px;
+
+  background:
+    radial-gradient(circle at 10% 15%, #1e50ad 0%, transparent 30%),
+    radial-gradient(circle at 90% 20%, #453a57 0%, transparent 30%),
+    radial-gradient(circle at 20% 85%, #562661 0%, transparent 35%),
+    radial-gradient(circle at 85% 85%, #581c87 0%, transparent 30%),
+    linear-gradient(135deg, #020202, #0b0314, #000000);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.app::before {
+  content: "";
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  top: -120px;
+  left: -120px;
+  background: rgba(56, 189, 248, 0.12);
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.app::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  bottom: -180px;
+  right: -150px;
+  background: rgba(168, 85, 247, 0.15);
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.container {
+  max-width: 950px;
+  margin: auto;
+  position: relative;
+  z-index: 1;
+}
+
+h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #38bdf8;
+
+  text-shadow:
+    0 0 10px rgba(56, 189, 248, 0.7),
+    0 0 25px rgba(56, 189, 248, 0.35),
+    0 0 45px rgba(124, 58, 237, 0.35);
+}
+
+.subtitle {
+  margin: 12px 0 10px;
+  text-align: center;
+  font-size: 18px;
+  color: #cbd5e1;
+  letter-spacing: 0.3px;
+}
+
+.offline-badge {
+  display: block;
+  text-align: center;
+  margin: 0 0 28px;
+  font-size: 13px;
+  color: #86efac;
+  letter-spacing: 0.4px;
+}
+
+.card,
+.result {
+  background: rgba(255, 255, 255, 0.94);
+  padding: 32px;
+  border-radius: 24px;
+  margin-bottom: 25px;
+
+  border: 1px solid rgba(125, 211, 252, 0.25);
+
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.35),
+    0 0 25px rgba(56, 189, 248, 0.06);
+
+  backdrop-filter: blur(12px);
+  transition: 0.3s ease;
+}
+
+.card:hover,
+.result:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 25px 55px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(56, 189, 248, 0.12);
+}
+
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  margin-bottom: 22px;
+  padding: 16px 18px;
+
+  background: #f0f9ff;
+  border: 1.5px dashed #7dd3fc;
+  border-radius: 14px;
+}
+
+.upload-row .file-label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0c4a6e;
+}
+
+.upload-row input[type="file"] {
+  font-size: 14px;
+  color: #1e293b;
+  max-width: 100%;
+}
+
+.file-name {
+  font-size: 13px;
+  color: #0369a1;
+  font-style: italic;
+}
+
+.document-status {
+  width: 100%;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.voice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+
+.voice-row label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.voice-row select {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 12px;
+
+  border: 2px solid #dbe4f0;
+  border-radius: 10px;
+
+  font-size: 14px;
+  color: #1e293b;
+  background: #fafdff;
+}
+
+.scope-note {
+  margin: 0 0 20px;
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+textarea {
+  width: 100%;
+  min-height: 210px;
+  padding: 18px;
+
+  border: 2px solid #dbe4f0;
+  border-radius: 16px;
+  outline: none;
+  resize: vertical;
+
+  font-family: inherit;
+  font-size: 17px;
+  line-height: 1.6;
+
+  color: #1e293b;
+  background: #fafdff;
+  transition: 0.3s ease;
+}
+
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+button:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.speak-btn {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 7px 18px rgba(21, 128, 61, 0.28);
+}
+
+.stop-btn {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 7px 18px rgba(185, 28, 28, 0.28);
+}
+
+.ai-btn {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  box-shadow: 0 7px 18px rgba(124, 58, 237, 0.28);
+}
+
+textarea:focus {
+  border-color: #38bdf8;
+  background: white;
+
+  box-shadow:
+    0 0 0 5px rgba(56, 189, 248, 0.12),
+    0 0 20px rgba(56, 189, 248, 0.12);
+}
+
+.text-count {
+  margin: 8px 3px 20px;
+  text-align: right;
+  color: #64748b;
+  font-size: 14px;
+}
+
+button {
+  margin-top: 5px;
+  margin-right: 10px;
+
+  padding: 13px 24px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, #0ea5e9, #2563eb, #7c3aed);
+
+  color: white;
+  font-size: 16px;
+  font-weight: 650;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.28);
+}
+
+button:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 11px 25px rgba(56, 189, 248, 0.30),
+    0 0 18px rgba(124, 58, 237, 0.18);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.result h2 {
+  margin: 0;
+  color: #172554;
+  font-size: 28px;
+
+  text-shadow:
+    0 0 12px rgba(56, 189, 248, 0.15);
+}
+
+.output-description {
+  margin: 8px 0 20px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.braille-box {
+  margin-top: 15px;
+  min-height: 190px;
+  padding: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: center;
+
+  background:
+    radial-gradient(circle at center, rgba(56, 189, 248, 0.10), transparent 65%),
+    linear-gradient(135deg, #f8fbff, #eef6ff);
+
+  border: 2px solid #7dd3fc;
+  border-radius: 18px;
+
+  color: #172554;
+
+  font-size: 36px;
+  line-height: 2;
+  letter-spacing: 4px;
+
+  box-shadow:
+    inset 0 0 25px rgba(59, 130, 246, 0.06),
+    0 8px 25px rgba(59, 130, 246, 0.10);
+
+  transition: 0.3s ease;
+}
+
+.braille-box:hover {
+  border-color: #38bdf8;
+
+  box-shadow:
+    inset 0 0 30px rgba(56, 189, 248, 0.08),
+    0 0 25px rgba(56, 189, 248, 0.15);
+}
+
+.error-message {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+
+  color: #be123c;
+  font-size: 15px;
+  text-align: center;
+}
+
+.notice-message {
+  margin-bottom: 20px;
+  padding: 12px 18px;
+
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+
+  color: #92400e;
+  font-size: 14px;
+  text-align: center;
+}
+
+.ai-status {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 10px;
+
+  color: #5b21b6;
+  font-size: 14px;
+  font-weight: 600;
+
+  display: none;
+}
+
+@media (max-width: 700px) {
+
+  .app {
+    padding: 35px 15px;
+  }
+
+  h1 {
+    font-size: 31px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .card,
+  .result {
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  textarea {
+    min-height: 180px;
+  }
+
+  .braille-box {
+    padding: 22px;
+    font-size: 27px;
+    letter-spacing: 2px;
+  }
+
+  button {
+    margin-bottom: 10px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<a href="#textInput" class="sr-only">Skip to text input</a>
+
+<main class="app">
+
+<div class="container">
+
+<h1>AI-Powered Braille Content Generator</h1>
+
+<p class="subtitle">
+Convert English text into Grade-1 Braille — built for visually impaired students
+</p>
+
+<p class="offline-badge">
+● Local Braille conversion — document extraction uses the local FastAPI server
+</p>
+
+<p id="errorMessage"
+   class="error-message"
+   role="alert"
+   style="display:none;">
+</p>
+
+<p id="voiceNotice"
+   class="notice-message"
+   style="display:none;">
+</p>
+
+
+<section class="card" aria-labelledby="inputLabel">
+
+<div class="upload-row">
+
+<label class="file-label" for="documentFile">
+📖 Upload a document:
+</label>
+
+<input
+  type="file"
+  id="documentFile"
+  accept=".txt,.pdf,.docx"
+>
+
+<button
+  id="uploadDocumentBtn"
+  type="button">
+Upload Document
+</button>
+
+<span
+  class="file-name"
+  id="fileName">
+</span>
+
+<span
+  class="document-status"
+  id="documentStatus">
+</span>
+
+</div>
+
+
+<p class="scope-note">
+
+Supported formats:
+
+<strong>.txt</strong> files are processed directly in the browser.
+
+<strong>.pdf</strong> and <strong>.docx</strong> files are sent to the local FastAPI
+document parser for text extraction.
+
+</p>
+
+
+<label id="inputLabel" for="textInput">
+Enter your text — or upload a document above to fill this in
+</label>
+
+
+<div class="voice-row">
+
+<label for="voiceSelect">
+🗣️ Read-aloud voice:
+</label>
+
+<select id="voiceSelect"></select>
+
+</div>
+
+
+<textarea
+  id="textInput"
+  placeholder="Type something here, or upload a .txt, .pdf, or .docx document above..."
+  maxlength="200000"
+  aria-describedby="charCountText"
+></textarea>
+
+
+<p class="text-count" id="charCountText">
+<span id="charCount">0</span>
+characters (max 200,000)
+</p>
+
+
+<!-- =====================================================
+     AI PROCESSING BUTTON
+====================================================== -->
+
+<button
+  id="processAIButton"
+  type="button"
+  class="ai-btn">
+🤖 Process with AI
+</button>
+
+<button
+  id="generateBtn"
+  type="button">
+Generate Braille
+</button>
+
+<p
+  id="aiStatus"
+  class="ai-status"
+  role="status"
+  aria-live="polite">
+</p>
+
+
+<button
+  id="speakInputBtn"
+  type="button"
+  class="speak-btn"
+  aria-label="Read entered text aloud">
+🔊 Read My Text Aloud
+</button>
+
+<button
+  id="stopSpeakBtn1"
+  type="button"
+  class="stop-btn"
+  aria-label="Stop reading aloud">
+🔇 Stop Reading
+</button>
+
+<button id="clearBtn" type="button">
+Clear
+</button>
+
+</section>
+
+
+<section
+  class="result"
+  id="resultBox"
+  style="display:none;"
+  aria-labelledby="resultHeading">
+
+<h2 id="resultHeading">
+Braille Output
+</h2>
+
+<p class="output-description">
+Your converted Braille text is shown below.
+</p>
+
+
+<div
+  class="braille-box"
+  id="brailleOutput"
+  role="status"
+  aria-live="polite"
+  tabindex="0"
+  aria-label="Braille conversion result">
+</div>
+
+
+<button
+  id="speakResultBtn"
+  type="button"
+  class="speak-btn"
+  aria-label="Read the original text aloud again">
+🔊 Read Original Text Aloud
+</button>
+
+<button
+  id="stopSpeakBtn2"
+  type="button"
+  class="stop-btn"
+  aria-label="Stop reading aloud">
+🔇 Stop Reading
+</button>
+
+<button id="downloadBtn" type="button">
+Download Braille
+</button>
+
+</section>
+
+
+<p
+  class="sr-only"
+  id="liveAnnouncer"
+  role="status"
+  aria-live="polite">
+</p>
+
+</div>
+</main>
+
+
+<script>
+
+/* =========================================================
+   BRAILLE MAP
+========================================================= */
+
+const BRAILLE_MAP = {
+
+  /* Letters */
+
+  "a": "⠁",
+  "°": "⠴",
+  "b": "⠃",
+  "c": "⠉",
+  "d": "⠙",
+  "e": "⠑",
+  "f": "⠋",
+  "g": "⠛",
+  "h": "⠓",
+  "i": "⠊",
+  "j": "⠚",
+  "k": "⠅",
+  "l": "⠇",
+  "m": "⠍",
+  "n": "⠝",
+  "o": "⠕",
+  "p": "⠏",
+  "q": "⠟",
+  "r": "⠗",
+  "s": "⠎",
+  "t": "⠞",
+  "u": "⠥",
+  "v": "⠧",
+  "w": "⠺",
+  "x": "⠭",
+  "y": "⠽",
+  "z": "⠵",
+
+  /* Spaces */
+
+  " ": " ",
+  "\n": "\n",
+  "\t": " ",
+
+  /* Numbers */
+
+  "1": "⠼⠁",
+  "2": "⠼⠃",
+  "3": "⠼⠉",
+  "4": "⠼⠙",
+  "5": "⠼⠑",
+  "6": "⠼⠋",
+  "7": "⠼⠛",
+  "8": "⠼⠓",
+  "9": "⠼⠊",
+  "0": "⠼⠚",
+
+  /* Basic punctuation */
+
+  ".": "⠲",
+  ",": "⠂",
+  "?": "⠦",
+  "!": "⠖",
+  ":": "⠒",
+  ";": "⠆",
+  "'": "⠄",
+  "-": "⠤",
+  "/": "⠌",
+
+  /* Brackets */
+
+  "(": "⠷",
+  ")": "⠾",
+  "[": "⠈⠷",
+  "]": "⠈⠾",
+  "{": "⠸⠷",
+  "}": "⠸⠾",
+
+  /* Symbols */
+
+  "+": "⠬",
+  "=": "⠶",
+  "*": "⠔",
+
+  "@": "⠈⠁",
+  "#": "⠼",
+  "$": "⠈⠎",
+  "%": "⠨⠴",
+  "&": "⠈⠯",
+
+  "_": "⠨⠤",
+  "|": "⠸⠳",
+  "\\": "⠸⠡",
+  "<": "⠐⠣",
+  ">": "⠐⠜",
+  "^": "⠘",
+
+  "\"": "⠦⠴",
+
+  /* Typographic punctuation */
+
+  "—": "⠤⠤",
+  "–": "⠤",
+  "…": "⠲⠲⠲",
+
+  "“": "⠦",
+  "”": "⠴",
+
+  "‘": "⠄",
+  "’": "⠄"
+};
+
+
+/* =========================================================
+   TEXT NORMALIZATION
+========================================================= */
+
+function normalizeText(text) {
+
+  if (!text) {
+    return "";
+  }
+
+  let normalized = text;
+
+  /* Convert line endings */
+
+  normalized =
+    normalized.replace(/\r\n/g, "\n");
+
+  normalized =
+    normalized.replace(/\r/g, "\n");
+
+
+  /* Replace non-breaking spaces */
+
+  normalized =
+    normalized.replace(/\u00A0/g, " ");
+
+
+  /*
+    Fix missing spaces after sentence punctuation.
+
+    Example:
+
+    light.Thomas
+
+    becomes:
+
+    light. Thomas
+  */
+
+  normalized =
+    normalized.replace(
+      /([.!?;:])([A-Za-z])/g,
+      "$1 $2"
+    );
+
+
+  /*
+    Fix missing spaces after commas.
+
+    Example:
+
+    Hello,Thomas
+
+    becomes:
+
+    Hello, Thomas
+  */
+
+  normalized =
+    normalized.replace(
+      /,([A-Za-z0-9])/g,
+      ", $1"
+    );
+
+
+  /*
+    Replace tabs and multiple spaces
+    with a single space.
+  */
+
+  normalized =
+    normalized.replace(
+      /[ \t]+/g,
+      " "
+    );
+
+
+  /*
+    Remove unnecessary spaces
+    around each line.
+  */
+
+  normalized =
+    normalized
+      .split("\n")
+      .map(line => line.trim())
+      .join("\n");
+
+
+  /*
+    Prevent excessive blank lines.
+  */
+
+  normalized =
+    normalized.replace(
+      /\n{3,}/g,
+      "\n\n"
+    );
+
+
+  return normalized.trim();
+}
+
+
+/* =========================================================
+   BRAILLE CONVERSION
+========================================================= */
+
+function generateBraille(text) {
+
+  const normalizedText =
+    normalizeText(text);
+
+  let brailleText = "";
+
+  let index = 0;
+
+  while (index < normalizedText.length) {
+
+    const character =
+      normalizedText[index];
+
+
+    /*
+      Handle a sequence of digits.
+
+      Example:
+
+      30
+
+      becomes:
+
+      ⠼⠉⠚
+
+      instead of:
+
+      ⠼⠉⠼⠚
+    */
+
+    if (/[0-9]/.test(character)) {
+
+  /*
+    Handle numbers, including decimals.
+
+    Examples:
+
+    30
+    2026
+    3.14
+    10.75
+
+    One number sign is used for the
+    complete number.
+  */
+
+  brailleText += "⠼";
+
+  while (index < normalizedText.length) {
+
+    const currentCharacter =
+      normalizedText[index];
+
+    /*
+      Continue through digits.
+    */
+
+    if (/[0-9]/.test(currentCharacter)) {
+
+      brailleText +=
+        BRAILLE_MAP[currentCharacter].replace("⠼", "");
+
+      index++;
+
+      continue;
+    }
+
+    /*
+      Allow a decimal point when it is
+      followed by another digit.
+
+      Example:
+
+      3.14
+      10.75
+    */
+
+    if (
+      currentCharacter === "." &&
+      index + 1 < normalizedText.length &&
+      /[0-9]/.test(normalizedText[index + 1])
+    ) {
+
+      brailleText +=
+        BRAILLE_MAP["."];
+
+      index++;
+
+      continue;
+    }
+
+    /*
+      Number is finished.
+    */
+
+    break;
+  }
+
+  continue;
+}
+
+
+    /*
+      Alphabetic characters
+    */
+
+    const lowerCharacter =
+      character.toLowerCase();
+      if (
+        /[a-z]/i.test(character) &&
+        lowerCharacter in BRAILLE_MAP
+      ) {
+        if (
+          character === character.toUpperCase() &&
+          (
+            index === 0 ||
+            !/[A-Z]/.test(normalizedText[index - 1])
+          )
+        ) {
+          brailleText += "⠠";
+        }
+
+        brailleText += BRAILLE_MAP[lowerCharacter];
+
+        index++;
+
+        continue;
+      }
+
+
+    /*
+      Other mapped characters
+    */
+    // Bullet/list marker
+    if (character === "•") {
+      brailleText += "⠤";
+      index++;
+      continue;
+    }
+
+    if (
+      character in BRAILLE_MAP
+    ) {
+
+      brailleText +=
+        BRAILLE_MAP[character];
+
+      index++;
+
+      continue;
+    }
+
+
+    /*
+      Preserve unknown characters
+    */
+
+    brailleText += character;
+
+    index++;
+  }
+
+  return brailleText;
+}
+
+
+/* =========================================================
+   DOM ELEMENTS
+========================================================= */
+
+const textInput =
+  document.getElementById("textInput");
+
+const charCount =
+  document.getElementById("charCount");
+
+const generateBtn =
+  document.getElementById("generateBtn");
+
+const processAIButton =
+  document.getElementById("processAIButton");
+
+const aiStatus =
+  document.getElementById("aiStatus");
+
+const clearBtn =
+  document.getElementById("clearBtn");
+
+const downloadBtn =
+  document.getElementById("downloadBtn");
+
+const resultBox =
+  document.getElementById("resultBox");
+
+const brailleOutput =
+  document.getElementById("brailleOutput");
+
+const errorMessage =
+  document.getElementById("errorMessage");
+
+const voiceNotice =
+  document.getElementById("voiceNotice");
+
+const speakInputBtn =
+  document.getElementById("speakInputBtn");
+
+const speakResultBtn =
+  document.getElementById("speakResultBtn");
+
+const stopSpeakBtn1 =
+  document.getElementById("stopSpeakBtn1");
+
+const stopSpeakBtn2 =
+  document.getElementById("stopSpeakBtn2");
+
+const liveAnnouncer =
+  document.getElementById("liveAnnouncer");
+
+const fileInput =
+  document.getElementById("documentFile");
+
+const fileNameLabel =
+  document.getElementById("fileName");
+
+const documentStatus =
+  document.getElementById("documentStatus");
+
+const uploadDocumentBtn =
+  document.getElementById("uploadDocumentBtn");
+
+const voiceSelect =
+  document.getElementById("voiceSelect");
+
+
+/* =========================================================
+   CONFIGURATION
+========================================================= */
+
+const MAX_FILE_BYTES =
+  20 * 1024 * 1024;
+
+
+/*
+  FastAPI backend running locally.
+*/
+
+const API_BASE_URL =
+  "http://127.0.0.1:8000";
+
+
+/* =========================================================
+   ACCESSIBILITY ANNOUNCER
+========================================================= */
+
+function announce(message) {
+
+  liveAnnouncer.textContent =
+    message;
+
+}
+
+
+/* =========================================================
+   ERROR HANDLING
+========================================================= */
+
+function showError(message) {
+
+  errorMessage.textContent =
+    message;
+
+  errorMessage.style.display =
+    "block";
+
+  announce(message);
+
+}
+
+
+function clearError() {
+
+  errorMessage.textContent =
+    "";
+
+  errorMessage.style.display =
+    "none";
+
+}
+
+
+/* =========================================================
+   FILE NAME DISPLAY
+========================================================= */
+
+fileInput.addEventListener(
+  "change",
+  () => {
+
+    clearError();
+
+    documentStatus.textContent =
+      "";
+
+    const file =
+      fileInput.files[0];
+
+
+    if (!file) {
+
+      fileNameLabel.textContent =
+        "";
+
+      return;
+
+    }
+
+
+    fileNameLabel.textContent =
+      "Selected: " +
+      file.name;
+
+  }
+);
+
+
+/* =========================================================
+   DOCUMENT UPLOAD
+========================================================= */
+
+uploadDocumentBtn.addEventListener(
+  "click",
+  async () => {
+
+    clearError();
+
+    documentStatus.textContent =
+      "";
+
+    const file =
+      fileInput.files[0];
+
+
+    if (!file) {
+
+      showError(
+        "Please select a .txt, .pdf, or .docx file first."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      file.size >
+      MAX_FILE_BYTES
+    ) {
+
+      showError(
+        "The selected file is too large. Maximum size is 20 MB."
+      );
+
+      return;
+
+    }
+
+
+    const fileName =
+      file.name.toLowerCase();
+
+
+    /* -----------------------------------------------------
+       TXT FILE
+    ----------------------------------------------------- */
+
+    if (
+      fileName.endsWith(".txt")
+    ) {
+
+      documentStatus.textContent =
+        "Reading text file...";
+
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        function(event) {
+
+          const content =
+            event.target.result;
+
+
+          textInput.value =
+            content;
+
+
+          charCount.textContent =
+            content.length;
+
+
+          fileNameLabel.textContent =
+            "Loaded: " +
+            file.name +
+            " (" +
+            content.length.toLocaleString() +
+            " characters)";
+
+
+          documentStatus.textContent =
+            "✓ Text file loaded successfully.";
+
+
+          announce(
+            "Text file loaded. " +
+            content.length +
+            " characters ready to convert."
+          );
+
+
+          textInput.focus();
+
+        };
+
+
+      reader.onerror =
+        function() {
+
+          showError(
+            "Could not read the text file. Please try again."
+          );
+
+          documentStatus.textContent =
+            "";
+
+        };
+
+
+      reader.readAsText(file);
+
+      return;
+
+    }
+
+
+    /* -----------------------------------------------------
+       PDF OR DOCX
+    ----------------------------------------------------- */
+
+    let endpoint = "";
+
+
+    if (
+      fileName.endsWith(".pdf")
+    ) {
+
+      endpoint =
+        API_BASE_URL +
+        "/upload-pdf";
+
+    } else if (
+      fileName.endsWith(".docx")
+    ) {
+
+      endpoint =
+        API_BASE_URL +
+        "/upload-docx";
+
+    } else {
+
+      showError(
+        "Unsupported file type. Please select a .txt, .pdf, or .docx file."
+      );
+
+      return;
+
+    }
+
+
+    uploadDocumentBtn.disabled =
+      true;
+
+
+    uploadDocumentBtn.textContent =
+      "Processing...";
+
+
+    documentStatus.textContent =
+      "Sending document to local FastAPI server...";
+
+
+    try {
+
+      const formData =
+        new FormData();
+
+
+      formData.append(
+        "file",
+        file
+      );
+
+
+      const response =
+        await fetch(
+          endpoint,
+          {
+            method: "POST",
+            body: formData
+          }
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Server returned status " +
+          response.status
+        );
+
+      }
+
+
+      const data =
+        await response.json();
+
+
+      if (!data.text) {
+
+        throw new Error(
+          "No text was extracted from the document."
+        );
+
+      }
+
+
+      textInput.value =
+        data.text;
+
+
+      charCount.textContent =
+        data.text.length;
+
+
+      fileNameLabel.textContent =
+        "Loaded: " +
+        data.filename +
+        " (" +
+        data.text.length.toLocaleString() +
+        " characters)";
+
+
+      documentStatus.textContent =
+        "✓ Document text extracted successfully.";
+
+
+      announce(
+        "Document loaded successfully. " +
+        data.text.length +
+        " characters extracted."
+      );
+
+
+      textInput.focus();
+
+
+    } catch (error) {
+
+      console.error(
+        "Document upload error:",
+        error
+      );
+
+
+      showError(
+        "Could not process the document. " +
+        "Make sure the FastAPI server is running."
+      );
+
+
+      documentStatus.textContent =
+        "Document processing failed.";
+
+    } finally {
+
+      uploadDocumentBtn.disabled =
+        false;
+
+
+      uploadDocumentBtn.textContent =
+        "Upload Document";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   AI TEXT PROCESSING
+========================================================= */
+
+processAIButton.addEventListener(
+  "click",
+  async () => {
+
+    clearError();
+
+    const originalText =
+      textInput.value;
+
+
+    if (!originalText.trim()) {
+
+      showError(
+        "Please upload or enter some text before using AI processing."
+      );
+
+      return;
+
+    }
+
+
+    processAIButton.disabled =
+      true;
+
+
+    generateBtn.disabled =
+      true;
+
+
+    processAIButton.textContent =
+      "🤖 Processing...";
+
+
+    aiStatus.style.display =
+      "block";
+
+
+    aiStatus.textContent =
+      "AI is cleaning and preparing your text...";
+
+
+    announce(
+      "AI text processing started."
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          API_BASE_URL +
+          "/process-text",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              text: originalText
+            })
+          }
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          "AI server returned status " +
+          response.status
+        );
+
+      }
+
+
+      const data =
+        await response.json();
+
+
+      if (data.error) {
+
+        throw new Error(
+          data.error
+        );
+
+      }
+
+
+      if (!data.text) {
+
+        throw new Error(
+          "AI did not return processed text."
+        );
+
+      }
+
+
+      /*
+        Put AI-processed text
+        back into the textarea.
+      */
+
+      textInput.value =
+        data.text;
+
+
+      charCount.textContent =
+        data.text.length;
+
+
+      aiStatus.textContent =
+        "✅ AI Processing Complete — Your text is ready for Braille conversion.";
+
+
+      announce(
+        "AI processing completed. " +
+        data.text.length +
+        " characters are ready for Braille conversion."
+      );
+
+
+      textInput.focus();
+
+
+    } catch (error) {
+
+      console.error(
+        "AI processing error:",
+        error
+      );
+
+
+      aiStatus.style.display =
+        "none";
+
+
+      showError(
+        "Could not process the text with AI. " +
+        "Make sure the FastAPI server and OpenAI API key are configured correctly."
+      );
+
+    } finally {
+
+      processAIButton.disabled =
+        false;
+
+
+      generateBtn.disabled =
+        false;
+
+
+      processAIButton.textContent =
+        "🤖 Process with AI";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   OFFLINE VOICE SUPPORT
+========================================================= */
+
+let hasLocalVoice =
+  null;
+
+
+const FEMALE_VOICE_HINTS = [
+
+  "female",
+  "samantha",
+  "victoria",
+  "karen",
+  "moira",
+  "tessa",
+  "fiona",
+  "zira",
+  "susan",
+  "linda",
+  "heather",
+  "allison",
+  "ava",
+  "kate",
+  "serena",
+  "google us english",
+  "google uk english female",
+  "microsoft zira"
+
+];
+
+
+function isLikelyFemale(voice) {
+
+  const n =
+    voice.name.toLowerCase();
+
+  return FEMALE_VOICE_HINTS.some(
+    hint => n.includes(hint)
+  );
+
+}
+
+
+function populateVoiceList() {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    return;
+
+  }
+
+
+  const voices =
+    window.speechSynthesis.getVoices();
+
+
+  if (
+    voices.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  const previousValue =
+    voiceSelect.value;
+
+
+  voiceSelect.innerHTML =
+    "";
+
+
+  voices.forEach(
+    (voice, i) => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        i;
+
+
+      option.textContent =
+        voice.name +
+        " (" +
+        voice.lang +
+        ")" +
+        (
+          isLikelyFemale(voice)
+            ? " — female"
+            : ""
+        );
+
+
+      voiceSelect.appendChild(
+        option
+      );
+
+    }
+  );
+
+
+  if (
+    previousValue &&
+    voices[previousValue]
+  ) {
+
+    voiceSelect.value =
+      previousValue;
+
+  } else {
+
+    const femaleIndex =
+      voices.findIndex(
+        isLikelyFemale
+      );
+
+
+    voiceSelect.value =
+      femaleIndex !== -1
+        ? femaleIndex
+        : 0;
+
+  }
+
+}
+
+
+function checkVoices() {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    hasLocalVoice =
+      false;
+
+    return;
+
+  }
+
+
+  const voices =
+    window.speechSynthesis.getVoices();
+
+
+  if (
+    voices.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  hasLocalVoice =
+    voices.some(
+      v => v.localService
+    );
+
+
+  if (
+    !hasLocalVoice
+  ) {
+
+    voiceNotice.textContent =
+      "Note: no fully offline voice was found on this device. " +
+      "Braille conversion still works without internet, but Read Aloud may need a connection.";
+
+
+    voiceNotice.style.display =
+      "block";
+
+  }
+
+
+  populateVoiceList();
+
+}
+
+
+if (
+  "speechSynthesis" in window
+) {
+
+  checkVoices();
+
+
+  window.speechSynthesis.onvoiceschanged =
+    checkVoices;
+
+}
+
+
+/* =========================================================
+   TEXT TO SPEECH
+========================================================= */
+
+function speakText(text) {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    showError(
+      "Text-to-speech is not supported in this browser."
+    );
+
+    return;
+
+  }
+
+
+  window.speechSynthesis.cancel();
+
+
+  const utterance =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+
+  utterance.rate =
+    0.95;
+
+
+  const voices =
+    window.speechSynthesis.getVoices();
+
+
+  const chosen =
+    voices[voiceSelect.value];
+
+
+  if (chosen) {
+
+    utterance.voice =
+      chosen;
+
+  }
+
+
+  window.speechSynthesis.speak(
+    utterance
+  );
+
+}
+
+
+/* =========================================================
+   CHARACTER COUNT
+========================================================= */
+
+textInput.addEventListener(
+  "input",
+  () => {
+
+    charCount.textContent =
+      textInput.value.length;
+
+  }
+);
+
+
+/* =========================================================
+   GENERATE BRAILLE
+========================================================= */
+
+generateBtn.addEventListener(
+  "click",
+  () => {
+
+    clearError();
+
+
+    const text =
+      textInput.value;
+
+
+    if (
+      !text.trim()
+    ) {
+
+      showError(
+        "Please enter some text first."
+      );
+
+      return;
+
+    }
+
+
+    generateBtn.disabled =
+      true;
+
+
+    generateBtn.textContent =
+      "Converting…";
+
+
+    announce(
+      "Converting to Braille, please wait."
+    );
+
+
+    setTimeout(
+      () => {
+
+        try {
+
+          const braille =
+            generateBraille(
+              text
+            );
+
+
+          brailleOutput.textContent =
+            braille;
+
+
+          resultBox.style.display =
+            "block";
+
+
+          announce(
+            "Braille generated. " +
+            text.length +
+            " characters converted."
+          );
+
+
+          brailleOutput.focus();
+
+
+        } catch (e) {
+
+          console.error(e);
+
+
+          showError(
+            "Something went wrong while generating Braille. Please try again."
+          );
+
+        } finally {
+
+          generateBtn.disabled =
+            false;
+
+
+          generateBtn.textContent =
+            "Generate Braille";
+
+        }
+
+      },
+      30
+    );
+
+  }
+);
+
+
+/* =========================================================
+   READ INPUT TEXT
+========================================================= */
+
+speakInputBtn.addEventListener(
+  "click",
+  () => {
+
+    const text =
+      textInput.value;
+
+
+    if (
+      !text.trim()
+    ) {
+
+      showError(
+        "Please enter some text first."
+      );
+
+      return;
+
+    }
+
+
+    clearError();
+
+    speakText(text);
+
+  }
+);
+
+
+/* =========================================================
+   READ ORIGINAL / CURRENT TEXT
+========================================================= */
+
+speakResultBtn.addEventListener(
+  "click",
+  () => {
+
+    speakText(
+      textInput.value
+    );
+
+  }
+);
+
+
+/* =========================================================
+   STOP SPEAKING
+========================================================= */
+
+function stopSpeaking() {
+
+  if (
+    "speechSynthesis" in window
+  ) {
+
+    window.speechSynthesis.cancel();
+
+
+    announce(
+      "Reading stopped."
+    );
+
+  }
+
+}
+
+
+stopSpeakBtn1.addEventListener(
+  "click",
+  stopSpeaking
+);
+
+
+stopSpeakBtn2.addEventListener(
+  "click",
+  stopSpeaking
+);
+
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+clearBtn.addEventListener(
+  "click",
+  () => {
+
+    textInput.value =
+      "";
+
+
+    charCount.textContent =
+      "0";
+
+
+    brailleOutput.textContent =
+      "";
+
+
+    resultBox.style.display =
+      "none";
+
+
+    aiStatus.textContent =
+      "";
+
+
+    aiStatus.style.display =
+      "none";
+
+
+    clearError();
+
+
+    fileInput.value =
+      "";
+
+
+    fileNameLabel.textContent =
+      "";
+
+
+    documentStatus.textContent =
+      "";
+
+
+    if (
+      "speechSynthesis" in window
+    ) {
+
+      window.speechSynthesis.cancel();
+
+    }
+
+
+    announce(
+      "Cleared."
+    );
+
+
+    textInput.focus();
+
+  }
+);
+
+
+/* =========================================================
+   DOWNLOAD BRAILLE
+========================================================= */
+
+downloadBtn.addEventListener(
+  "click",
+  () => {
+
+    const content =
+      "Original Text:\n\n" +
+      textInput.value +
+      "\n\nBraille:\n\n" +
+      brailleOutput.textContent;
+
+
+    const blob =
+      new Blob(
+        [content],
+        {
+          type: "text/plain"
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      "braille-output.txt";
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  }
+);
+
+
+/* =========================================================
+   SERVICE WORKER
+========================================================= */
+
+if (
+  "serviceWorker" in navigator
+) {
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register(
+          "./service-worker.js"
+        )
+
+        .then(
+          () => {
+
+            console.log(
+              "Service Worker registered successfully."
+            );
+
+          }
+        )
+
+        .catch(
+          error => {
+
+            console.error(
+              "Service Worker registration failed:",
+              error
+            );
+
+          }
+        );
+
+    }
+  );
+
+}
+
+</script>
+
+</body>
+</html>
